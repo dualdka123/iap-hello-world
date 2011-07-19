@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Android Game Level Builder</title>
+    <link href="/stylesheets/screen.css" media="all" rel="stylesheet" type="text/css"/>
+    <script language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js" type="text/javascript"></script>
+    {% if can_build %}
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $('#add_static').click(function() {
+          var n = $('.static').length;
+          var new_node = ["<tr class='static' id='static", n ,"'>",
+                          "<td></td>",
+                          "<td>column: <input type='text' name='static_column", n, "'/></td>",
+                          "<td>rows:<input type='text' name='static_rows", n, "'/></td>", "</tr>"];          
+          var previous_node = "#static" + (n - 1);
+          $(previous_node).after($(new_node.join('')));
+        });
+
+        $('#add_moveable').click(function() {
+          var n = $('.moveable').length;
+          var new_node = ["<tr class='moveable' id='moveable", n ,"'>",
+                          "<td></td>",
+                          "<td>column: <input type='text' name='moveable_column", n, "'/></td>",
+                          "<td>rows:<input type='text' name='moveable_rows", n, "'/></td>", "</tr>"];          
+          var previous_node = "#moveable" + (n - 1);
+          $(previous_node).after($(new_node.join('')));
+        });
+      });
+    {% endif %}
+    </script>
+  </head>
+  <body>
+    <div style="text-align: right;"><a href="/">Back to main</a></div>
+    {% if error %}<font color="red">{% endif %}{{ message }}{% if error %}</font>{% endif %}
+    {% if can_build %}
+    <div>Levels have 24 columns and 10 rows of blocks:</div>
+    <div><img src="/images/default_game_board.png" alt="Default Game Board" /></div>
+    <div style="margin-left: auto; margin-right: auto; width: 1076px;">When adding a level, specify the number of full rows at the bottom, then for each column which will have static/moveable blocks, specify the rows which will have blocks in them and add columns accordingly.</div>
+    <form action="/build-level" method="post">
+      <table>
+        <tr>
+          <td>Level name: </td><td colspan="2"><input style="width: 100%;" type="text" name="level" /></td>
+        </tr>
+        <tr>
+          <td>Rows of blocks at bottom of screen:</td><td colspan="2"><input style="width: 100%;" type="text" name="base_rows" /></td>
+        </tr>
+        <tr>
+          <td colspan="3">For a given column (below), please enter rows as a comma separated list:</td>
+        </tr>
+        <tr class="static" id="static0">
+          <td>Static Blocks  <button id="add_static" type="button">Add column</button></td>
+          <td>column: <input type="text" name="static_column0" /></td>
+          <td>rows:<input type="text" name="static_rows0" /></td>
+        </tr>
+        <tr class="moveable" id="moveable0">
+          <td>Moveable Blocks  <button id="add_moveable" type="button">Add column</button></td>
+          <td>column: <input type="text" name="moveable_column0" /></td>
+          <td>rows:<input type="text" name="moveable_rows0" /></td>
+        </tr>
+        <tr>
+          <td>Door Location</td><td>column: <input type="text" name="door_column" /></td><td>row: <input type="text" name="door_row" /></td>
+        </tr>
+        <tr>
+          <td>Player Location</td><td>column: <input type="text" name="player_column" /></td><td>row: <input type="text" name="player_row" /></td>
+        </tr>
+      </table>
+      <input type="submit" value="Create level!">
+    </form>
+    {% endif %}
+  </body>
+</html>

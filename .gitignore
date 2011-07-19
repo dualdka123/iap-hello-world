@@ -1,0 +1,6 @@
+*.pyc
+.DS_Store
+sellerinfo.py
+*~
+#*
+evolving_javascripts_orig
