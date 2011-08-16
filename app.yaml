@@ -1,5 +1,5 @@
 application: iap-hello-world
-version: 1-4
+version: 1-6
 runtime: python
 api_version: 1
 
@@ -23,7 +23,6 @@ handlers:
 
 - url: /source
   static_dir: source
-  login: required
   mime_type: "application/zip"
 
 - url: /play

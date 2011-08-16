@@ -3,8 +3,8 @@
   <head>
     <title>Android Game</title>
     <link href="/stylesheets/screen.css" media="all" rel="stylesheet" type="text/css"/>
-    <script language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js" type="text/javascript"></script>
-    <script language="javascript" src="/javascripts/thirdparty/jquery.hotkeys.js" type="text/javascript"></script>
+    <script language="javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
+    <script language="javascript" src="https://raw.github.com/jeresig/jquery.hotkeys/master/jquery.hotkeys.js" type="text/javascript"></script>
     <script language="javascript" src="/javascripts/thirdparty/key_status.js" type="text/javascript"></script>
     <script language="javascript" src="/javascripts/thirdparty/util.js" type="text/javascript"></script>
     <script language="javascript" src="/javascripts/thirdparty/sprite.js" type="text/javascript"></script>
@@ -18,92 +18,100 @@
     <h1>Android Game</h1>
     <script type='text/javascript'>
       //<![CDATA[
-        var ENTITY_SIZE = {{ entity_size }};
-        var CANVAS_HEIGHT_BLOCKS = {{ canvas_height_blocks }};
-        var CANVAS_HEIGHT = CANVAS_HEIGHT_BLOCKS*ENTITY_SIZE;
-        var CANVAS_WIDTH_BLOCKS = {{ canvas_width_blocks }};
-        var CANVAS_WIDTH = CANVAS_WIDTH_BLOCKS*ENTITY_SIZE;
+        var ENTITY_SIZE = {{ entity_size }},
+            CANVAS_HEIGHT_BLOCKS = {{ canvas_height_blocks }},
+            CANVAS_HEIGHT = CANVAS_HEIGHT_BLOCKS * ENTITY_SIZE,
+            CANVAS_WIDTH_BLOCKS = {{ canvas_width_blocks }},
+            CANVAS_WIDTH = CANVAS_WIDTH_BLOCKS * ENTITY_SIZE;
 
         var FPS = 30;
 
-        var base_blocks = {{ base_blocks }};
+        var baseBlocks = {{ base_blocks }};
 
-        var CONSTANTS = {"base_blocks": base_blocks,
-                         "step_size": {{ step_size }},
-                         "entity_size": ENTITY_SIZE,
-                         "canvas_height": CANVAS_HEIGHT_BLOCKS*ENTITY_SIZE,
-                         "canvas_width": CANVAS_WIDTH_BLOCKS*ENTITY_SIZE};
+        var CONSTANTS = {'baseBlocks': baseBlocks,
+                         'stepSize': {{ step_size }},
+                         'entitySize': ENTITY_SIZE,
+                         'canvasHeight': CANVAS_HEIGHT,
+                         'canvasWidth': CANVAS_WIDTH};
 
         // Initialize Environment
         var canvasElement = $("<canvas width='" + CANVAS_WIDTH +
-                              "' height='" + CANVAS_HEIGHT + "'></canvas>");
-        var canvas = canvasElement.get(0).getContext("2d");
+                              "' height='" + CANVAS_HEIGHT + "'></canvas>"),
+            canvas = canvasElement.get(0).getContext('2d');
         canvasElement.appendTo('body');
+
+        var player = new Player({{ player_start.x }}, {{ player_start.y }}, 
+                               '{{ sprite }}'),
+            door = {'row': {{ door.row }}, 'column': {{ door.column }}},
+            NEXT_URL = '{{ next_level }}' ? 
+                       '/play?level={{ next_level }}' : '/';
+
+        $(document).keydown(function(e) {
+          if (e.keyCode == 37 || e.keyCode == 39) { 
+            event.preventDefault();
+            return false;
+          }
+        });
+
+        $(document).keyup(function(e) {
+          // space, left or right
+          if (e.keyCode == 32 || e.keyCode == 37 || e.keyCode == 39) {
+            if (player.reached(door, CONSTANTS)) {
+              window.location.replace(NEXT_URL);
+            }
+            return false;
+          }
+        });
 
         setInterval(function() {
           update();
           draw();
-        }, 1000/FPS);
-
-        var player = new Player({{ player_start.x }}, {{ player_start.y }}, "{{ sprite }}");
+        }, 1000 / FPS);
 
         // for ease of drawing purposes, this holds *all* block entities
         var blocks = [];
 
         // Base Static Blocks
         for (var i = 0; i < CANVAS_WIDTH_BLOCKS; i++) {
-          for (var j = 0; j < base_blocks ; j++) {
+          for (var j = 0; j < baseBlocks ; j++) {
             blocks.push(new Block(true, j, i, ENTITY_SIZE, CANVAS_HEIGHT));
           }
         }
 
         // Obstacles
-        var door = {"row": {{ door.row }}, "column": {{ door.column }}};
-
-        var static_blocks = {{ static_blocks }};
-        $.each(static_blocks, function(column_key, row_values) {
-          $.each(row_values, function(index, row) {
-            blocks.push(new Block(true, row, parseInt(column_key), ENTITY_SIZE, CANVAS_HEIGHT));
+        var staticBlocks = {{ static_blocks }};
+        $.each(staticBlocks, function(columnKey, rowValues) {
+          $.each(rowValues, function(index, row) {
+            blocks.push(new Block(true, row, parseInt(columnKey),
+                                  ENTITY_SIZE, CANVAS_HEIGHT));
           });
         });
 
-        var move_blocks = {{ move_blocks }};
-        $.each(move_blocks, function(column_key, row_values) {
-          $.each(row_values, function(index, row) {
-            blocks.push(new Block(false, row, parseInt(column_key), ENTITY_SIZE, CANVAS_HEIGHT));
+        var moveBlocks = {{ move_blocks }};
+        $.each(moveBlocks, function(columnKey, rowValues) {
+          $.each(rowValues, function(index, row) {
+            blocks.push(new Block(false, row, parseInt(columnKey),
+                                  ENTITY_SIZE, CANVAS_HEIGHT));
           });
         });
 
         function update() {
-          if (player.reached(door, CONSTANTS)) {
-            var url = window.location.origin;
-            if ("{{ next_level }}") {
-              var go_next_level = confirm("Would you like to proceed to level {{ next_level }} or return to the main page?");
-              if (go_next_level) {
-                url = url + "/play?level={{ next_level }}";
-              }
-            } else {
-              alert("You have no more levels to move on to dude.");
-            }
-            window.location.replace(url);
-            return;
-          }
-
           if (player.freefall) {
-            player.fall(static_blocks, move_blocks, CONSTANTS);
-          } else if (typeof player.block != "undefined" && player.block.solo_freefall) {
-            player.block.fall(player, static_blocks, move_blocks, CONSTANTS);
+            player.fall(staticBlocks, moveBlocks, CONSTANTS);
+          } else if (typeof player.block != 'undefined' && 
+                     player.block.soloFreefall) {
+            player.block.fall(player, staticBlocks, moveBlocks, CONSTANTS);
           } else {
             if (keydown.up) {
-              player.pickup(blocks, static_blocks, move_blocks, CONSTANTS);
+              player.pickup(blocks, staticBlocks, moveBlocks, CONSTANTS);
             } else if (keydown.down) {            
-              player.putdown(static_blocks, move_blocks, CONSTANTS);
+              player.putdown(staticBlocks, moveBlocks, CONSTANTS);
             } else if (keydown.space) {
-              player.jump(static_blocks, move_blocks, CONSTANTS);
+              player.jump(staticBlocks, moveBlocks, CONSTANTS);
             } else if (keydown.left) {
-              player.step("left", static_blocks, move_blocks, CONSTANTS);
+              player.step('left', staticBlocks, moveBlocks, CONSTANTS);
             } else if (keydown.right) {
-              player.step("right", static_blocks, move_blocks, CONSTANTS);
+              player.step('right', staticBlocks, moveBlocks, CONSTANTS);
             }
           }
         };
@@ -111,15 +119,17 @@
         function draw() {
           canvas.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
+          // Door
+          canvas.fillStyle = '#000'; // BLACK
+          canvas.fillRect(door.column * ENTITY_SIZE, CANVAS_HEIGHT -
+                          ENTITY_SIZE * (2 + door.row),
+                          ENTITY_SIZE, 2 * ENTITY_SIZE);
+
           player.draw(canvas);
 
           $.each(blocks, function(index, block) {
             block.draw(canvas, ENTITY_SIZE);
           });
-
-          // Door
-          canvas.fillStyle = "#000"; // BLACK
-          canvas.fillRect(door.column*ENTITY_SIZE, CANVAS_HEIGHT - ENTITY_SIZE*(2 + door.row), ENTITY_SIZE, 2*ENTITY_SIZE);
         };
       //]]>
     {% else %}
