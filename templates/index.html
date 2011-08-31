@@ -11,19 +11,18 @@
         'packages': ['sandbox_config']
       });
 
-      //Success handler
+      // Success handler
       var successHandler = function(purchaseActionStatus){
         if (window.console != undefined) {
           console.log("Purchase completed successfully: ", purchaseActionStatus);
           window.location.reload();
         }
       }
-  
-      //Failure handler
+
+      // Failure handler
       var failureHandler = function(purchaseActionStatus){
         if (window.console != undefined) {
           console.log("Purchase did not complete ", purchaseActionStatus);
-          // Do stuff
         }
       }
 
@@ -38,7 +37,10 @@
         } else if (item == "Source") {
           generated_jwt = "{{ source_jwt }}";
         } else {
-          return; // Silently does nothing if called without specified values, may swap this out with an AJAX call
+          /* Silently does nothing if called without specified values, it is
+             worth swapping this out with an AJAX call for use in your own
+             games */
+          return;
         }
 
         goog.payments.inapp.buy({
@@ -72,14 +74,14 @@
           <div>
             {% for level in levels %}
               <a href="/play?level={{ level }}">Play Level {{ level }}</a><br />
-            {% endfor %} 
+            {% endfor %}
           </div>
           {% if user_levels %}
           <div style="padding-top: 15px;">
             Your custom levels:<br />
             {% for level in user_levels %}
               <a href="/play?level={{ level }}">Play Level {{ level }}</a><br />
-            {% endfor %} 
+            {% endfor %}
           </div>
           {% endif %}
 
@@ -137,7 +139,7 @@
             <ul>
             {% for provider in providers %}
               <li><a href="{{ provider.0 }}"><img src="/images/{{ provider.1|lower }}.png" alt="{{ provider.1 }}" /></a></li>
-            {% endfor %} 
+            {% endfor %}
             </ul>
           </td>
         </tr>

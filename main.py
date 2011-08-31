@@ -1,6 +1,6 @@
 # Copyright 2011 Google Inc. All Rights Reserved.
 
-# pylint: disable-msg=C6409
+# pylint: disable-msg=C6409,C6203
 
 """Separate models module for IAP Hello World."""
 
@@ -28,60 +28,8 @@ from sellerinfo import SELLER_SECRET
 
 
 def DBPIckle(value):
+  """Returns anative python pickled and consumable by the GAE datastore."""
   return db.Text(pickle.dumps(value))
-
-
-def ParseRowsFromRequest(request, key, delimiter=',',
-                         base_rows=1, max_row=9, max_column=23):
-  """Helper function for Build Level which parses rows from the request.
-
-  Note: this ignores duplicates
-
-  Args:
-    request: server request being handled
-    key: intended to be one of moveable or static, the types of blocks in
-         the build level form
-    delimiter: delimiter used to separate rows for a given column
-    base_rows: base_rows from same request (minimum 1)
-    max_row: maximum value a row can take
-    max_column: maximum value a column can take
-
-  Returns:
-    Dictionary with columns are keys and input row values for that column.
-    If the inputs are incorrectly specified or out of range, returns None.
-  """
-  result = {}
-  input_row = 0
-  column = request.get('%s_column%s' % (key, input_row), None)
-  rows = request.get('%s_rows%s' % (key, input_row), None)
-  while column is not None:
-    try:
-      column = int(column)
-      if column < 0 or column > max_column:
-        return None
-    except (ValueError, TypeError):
-      return None
-
-    row_vals = result.setdefault(column, [])
-    try:
-      split_vals = rows.split(delimiter)
-      for row in split_vals:
-        try:
-          row = int(row)
-          if row < base_rows or row > max_row:
-            return None
-        except (ValueError, TypeError):
-          return None
-        if row not in row_vals:
-          row_vals.append(row)
-    except AttributeError:
-      return None
-
-    input_row += 1
-    column = request.get('%s_column%s' % (key, input_row), None)
-    rows = request.get('%s_rows%s' % (key, input_row), None)
-
-  return result
 
 
 class MainHandler(webapp.RequestHandler):
@@ -292,6 +240,58 @@ class Play(webapp.RequestHandler):
 class BuildLevel(webapp.RequestHandler):
   """Level builder."""
 
+  def ParseRowsFromRequest(self, key, delimiter=',',
+                           base_rows=1, max_row=9, max_column=23):
+    """Helper function for which parses rows from the request.
+
+    Note: this ignores duplicates
+
+    Args:
+      request: server request being handled
+      key: intended to be one of moveable or static, the types of blocks in
+           the build level form
+      delimiter: delimiter used to separate rows for a given column
+      base_rows: base_rows from same request (minimum 1)
+      max_row: maximum value a row can take
+      max_column: maximum value a column can take
+
+    Returns:
+      Dictionary with columns are keys and input row values for that column.
+      If the inputs are incorrectly specified or out of range, returns None.
+    """
+    result = {}
+    input_row = 0
+    column = self.request.get('%s_column%s' % (key, input_row), None)
+    rows = self.request.get('%s_rows%s' % (key, input_row), None)
+    while column is not None:
+      try:
+        column = int(column)
+        if column < 0 or column > max_column:
+          return None
+      except (ValueError, TypeError):
+        return None
+
+      row_vals = result.setdefault(column, [])
+      try:
+        split_vals = rows.split(delimiter)
+        for row in split_vals:
+          try:
+            row = int(row)
+            if row < base_rows or row > max_row:
+              return None
+          except (ValueError, TypeError):
+            return None
+          if row not in row_vals:
+            row_vals.append(row)
+      except AttributeError:
+        return None
+
+      input_row += 1
+      column = self.request.get('%s_column%s' % (key, input_row), None)
+      rows = self.request.get('%s_rows%s' % (key, input_row), None)
+
+    return result
+
   def get(self):
     """Handles get requests."""
     user = users.get_current_user()
@@ -341,9 +341,7 @@ class BuildLevel(webapp.RequestHandler):
         self.SendError('%s is already a level' % level_name, can_build)
         return
 
-    ######################
-    # Validate base_rows #
-    ######################
+    # Validate base_rows
     max_column = 23
     max_row = 9
 
@@ -359,19 +357,15 @@ class BuildLevel(webapp.RequestHandler):
                       'of screen' % base_rows), can_build)
       return
 
-    #####################
-    # Validate static #
-    #####################
-    static = ParseRowsFromRequest(self.request, 'static')
+    # Validate static
+    static = self.ParseRowsFromRequest('static')
     if static is None:
       self.SendError(('Static Blocks invalid. Please use '
                       'integers and separate rows by commas'), can_build)
       return
 
-    #####################
-    # Validate moveable #
-    #####################
-    moveable = ParseRowsFromRequest(self.request, 'moveable')
+    # Validate moveable
+    moveable = self.ParseRowsFromRequest('moveable')
     if moveable is None:
       self.SendError(('Moveable Blocks invalid. Please use '
                       'integers and separate rows by commas'), can_build)
@@ -391,9 +385,7 @@ class BuildLevel(webapp.RequestHandler):
             self.SendError('Moveable can\'t hover', can_build)
             return
 
-    #################
-    # Validate door #
-    #################
+    # Validate door
     door_column = self.request.get('door_column', '')
     door_row = self.request.get('door_row', '')
     try:
@@ -424,9 +416,7 @@ class BuildLevel(webapp.RequestHandler):
     door = {'row': door_row,
             'column': door_column}
 
-    ###################
-    # Validate player #
-    ###################
+    # Validate player
     player_column = self.request.get('player_column', '')
     player_row = self.request.get('player_row', '')
     try:

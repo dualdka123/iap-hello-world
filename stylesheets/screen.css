@@ -1,3 +1,11 @@
+/**
+ * Copyright 2011 Google Inc. All Rights Reserved
+ *
+ * Styles used for all pages served by the app, iap-hello-world
+ *
+ * Author: dhermes@google.com (Daniel Hermes)
+ */
+
 body {
   font-family: Verdana;
   font-size: 10pt;
@@ -13,10 +21,10 @@ li {
   list-style: none;
 }
 
-table { 
+table {
   margin-left: auto;
   margin-right: auto;
-} 
+}
 
 ul {
   margin-top: 0px;

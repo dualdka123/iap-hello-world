@@ -21,20 +21,20 @@ var STATIC_COLORS = ['#3369E8',  // BLUE
  * @constructor
  */
 function Block(isStatic, row, column, size, canvasHeight) {
-    this.soloFreefall = false;
-    this.row = row;
-    this.column = column;
-    this.static = isStatic;
-    this.size = size;
+  this.soloFreefall = false;
+  this.row = row;
+  this.column = column;
+  this.static = isStatic;
+  this.size = size;
 
-    if (this.static) {
-        this.color = STATIC_COLORS[(this.row + this.column) % 3];
-    } else {
-        this.color = '#EEB211'; // YELLOW
-    }
+  if (this.static) {
+    this.color = STATIC_COLORS[(this.row + this.column) % 3];
+  } else {
+    this.color = '#EEB211'; // YELLOW
+  }
 
-    this.x = size * this.column;
-    this.y = canvasHeight - (this.row + 1) * size;
+  this.x = size * this.column;
+  this.y = canvasHeight - (this.row + 1) * size;
 }
 
 /**
@@ -43,10 +43,10 @@ function Block(isStatic, row, column, size, canvasHeight) {
  *     for drawing game.
  */
 Block.prototype.draw = function(canvas) {
-    canvas.fillStyle = this.color;
-    canvas.fillRect(this.x, this.y, this.size, this.size);
-    canvas.strokeStyle = '#000'; // BLACK
-    canvas.strokeRect(this.x, this.y, this.size, this.size);
+  canvas.fillStyle = this.color;
+  canvas.fillRect(this.x, this.y, this.size, this.size);
+  canvas.strokeStyle = '#000'; // BLACK
+  canvas.strokeRect(this.x, this.y, this.size, this.size);
 };
 
 /**
@@ -58,46 +58,46 @@ Block.prototype.draw = function(canvas) {
  * @param {object} constants Remaining constants defining surrounding game.
  */
 Block.prototype.fall = function(player, staticBlocks, moveBlocks, constants) {
-    /* We only allow objects to fall when perfectly aligned with a column.
-       This greatly simplifies gravity */
-    if (this.x % this.size != 0) {
-        // Block not in a in a column
-        console.log('Block not in a column when fall called');
-        return;
-    }
+  /* We only allow objects to fall when perfectly aligned with a column.
+     This greatly simplifies gravity */
+  if (this.x % this.size != 0) {
+    // Block not in a in a column
+    console.log('Block not in a column when fall called');
+    return;
+  }
 
-    var column = this.x / this.size,
-        // Coordinate system from top left
-        bottomLocation = constants.canvasHeight - (this.y + this.size),
-        destinationRow = Math.floor(
-            (bottomLocation - constants.stepSize) / this.size);
+  var column = this.x / this.size,
+    // Coordinate system from top left
+    bottomLocation = constants.canvasHeight - (this.y + this.size),
+    destinationRow = Math.floor(
+        (bottomLocation - constants.stepSize) / this.size);
 
-    if (destinationRow < constants.baseBlocks) {
-        this.y = constants.canvasHeight - this.size -
-                 constants.baseBlocks * this.size;
-        this.soloFreefall = false;
+  if (destinationRow < constants.baseBlocks) {
+    this.y = constants.canvasHeight - this.size -
+             constants.baseBlocks * this.size;
+    this.soloFreefall = false;
+  } else {
+    var staticIndex = $.inArray(destinationRow, staticBlocks[column] || []),
+        moveIndex = $.inArray(destinationRow, moveBlocks[column] || []);
+    if (staticIndex != -1 || moveIndex != -1) {
+      this.y = constants.canvasHeight - this.size -
+               (destinationRow + 1) * this.size;
+      this.soloFreefall = false;
     } else {
-        var staticIndex = $.inArray(destinationRow, staticBlocks[column] || []),
-            moveIndex = $.inArray(destinationRow, moveBlocks[column] || []);
-        if (staticIndex != -1 || moveIndex != -1) {
-            this.y = constants.canvasHeight - this.size -
-                     (destinationRow + 1) * this.size;
-            this.soloFreefall = false;
-        } else {
-            this.y += constants.stepSize;
-        }
+      this.y += constants.stepSize;
     }
+  }
 
-    if (!this.soloFreefall) {
-        delete player.block;
+  if (!this.soloFreefall) {
+    delete player.block;
 
-        this.row = destinationRow + 1;
-        this.column = column;
+    this.row = destinationRow + 1;
+    this.column = column;
 
-        if (column in moveBlocks) {
-            moveBlocks[column].push(destinationRow + 1);
-        } else {
-            moveBlocks[column] = [destinationRow + 1];
-        }
+    if (column in moveBlocks) {
+      moveBlocks[column].push(destinationRow + 1);
+    } else {
+      moveBlocks[column] = [destinationRow + 1];
     }
+  }
 };

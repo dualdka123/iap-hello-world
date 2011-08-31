@@ -12,7 +12,7 @@
           var new_node = ["<tr class='static' id='static", n ,"'>",
                           "<td></td>",
                           "<td>column: <input type='text' name='static_column", n, "'/></td>",
-                          "<td>rows:<input type='text' name='static_rows", n, "'/></td>", "</tr>"];          
+                          "<td>rows:<input type='text' name='static_rows", n, "'/></td>", "</tr>"];
           var previous_node = "#static" + (n - 1);
           $(previous_node).after($(new_node.join('')));
         });
@@ -22,7 +22,7 @@
           var new_node = ["<tr class='moveable' id='moveable", n ,"'>",
                           "<td></td>",
                           "<td>column: <input type='text' name='moveable_column", n, "'/></td>",
-                          "<td>rows:<input type='text' name='moveable_rows", n, "'/></td>", "</tr>"];          
+                          "<td>rows:<input type='text' name='moveable_rows", n, "'/></td>", "</tr>"];
           var previous_node = "#moveable" + (n - 1);
           $(previous_node).after($(new_node.join('')));
         });
