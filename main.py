@@ -242,12 +242,11 @@ class BuildLevel(webapp.RequestHandler):
 
   def ParseRowsFromRequest(self, key, delimiter=',',
                            base_rows=1, max_row=9, max_column=23):
-    """Helper function for which parses rows from the request.
+    """Helper function for which parses rows from self.request.
 
     Note: this ignores duplicates
 
     Args:
-      request: server request being handled
       key: intended to be one of moveable or static, the types of blocks in
            the build level form
       delimiter: delimiter used to separate rows for a given column
