@@ -1,5 +1,5 @@
 OPEN_ID_PROVIDERS = (
-    ('Google', 'google.com/accounts/o8/id'),
+    ('Google', 'www.google.com/accounts/o8/id'),
     ('Yahoo', 'yahoo.com'),
     ('MySpace', 'myspace.com'),
     ('AOL', 'aol.com'),
